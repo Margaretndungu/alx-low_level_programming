@@ -1,10 +1,11 @@
-#!/bin/bash
 #include <stdio.h>
-int main ()
+/*
+ * main -Aprogram that prints a line with put function
+ *
+ * Return:0 (Success)
+ */
+int main (void)
 {
-	/*string intialisation*/
-	char Mystr[] = "Programming is like building a multilingual puzzle";
-
-	puts(Mystr);
-
-	return 0;
+	puts("\"programming is like building a multilingual puzzle");
+	return (0);
+}

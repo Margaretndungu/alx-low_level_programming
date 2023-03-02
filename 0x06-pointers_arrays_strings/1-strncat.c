@@ -9,20 +9,21 @@
  */
 char *_strncat(char *dest, char *src, int n)
 {
-if ((dest == NULL) && (src == NULL))
-return (NULL);
+	int a;
+	int b;
 
-while (*dest != '\0')
-{
-dest++;
-}
-while (n--)
-{
-while (!(*dest++ = *src++))
-{
-return (dest);
-}
-}
-*dest = '\0';
-return (dest);
+	a = 0;
+	while (dest[a] != '\0')
+	{
+		a++;
+	}
+	b = 0;
+	while (b < n && src[b] != '\0')
+	{
+		dest[a] = src[b];
+		a++;
+		b++;
+	}
+	dest[a] = '\0';
+	return (dest);
 }

@@ -33,10 +33,8 @@ unsigned int binary_to_uint(const char *b)
 		}
 		else
 		{
-			free((void *)b);
-			exit(1);
+			return (0);
 		}
 	}
-		free((void *)b);
 		return (result);
 }

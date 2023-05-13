@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <errno.h>
 #include "main.h"
 /**
  * read_textfile - function that reads a text file and prints
@@ -13,45 +11,48 @@
  */
 ssize_t read_textfile(const char *filename, size_t letters)
 {
-	FILE *file;
+	int fd;
 	char *buffer;
 	ssize_t bytesRead, bytesWritten;
-
-	file = fopen(filename, "r");
-	if (file == NULL)
-	{
-		return (0);
-	}
-
-	buffer = (char *) malloc((letters + 1) * sizeof(char));
-	if (buffer == NULL)
-	{
-		fclose(file);
-		return (0);
-	}
 
 	if (filename == NULL)
 	{
 		return (0);
 	}
 
-	bytesRead = fread(buffer, sizeof(char), letters, file);
+	fd = open(filename, O_RDONLY);
 
-	if (bytesRead < 0)
+	if (fd == -1)
 	{
-		fclose(file);
+		return (0);
+	}
+
+	buffer = (char *) malloc(sizeof(char) * (letters + 1));
+
+	if (buffer == NULL)
+	{
+		close(fd);
+		return (0);
+	}
+
+	bytesRead = read(fd, buffer, letters);
+
+	if (bytesRead == -1)
+	{
+		close(fd);
 		free(buffer);
 		return (0);
 	}
-	bytesWritten = fwrite(buffer, sizeof(char), bytesRead, stdout);
 
-	if (bytesWritten < 0 || bytesWritten != bytesRead)
+	bytesWritten = write(STDOUT_FILENO, buffer, bytesRead);
+
+	if (bytesWritten == -1 || bytesWritten != bytesRead)
 	{
-		fclose(file);
+		close(fd);
 		free(buffer);
 		return (0);
 	}
-	fclose(file);
+	close(fd);
 	free(buffer);
 	return (bytesRead);
 }

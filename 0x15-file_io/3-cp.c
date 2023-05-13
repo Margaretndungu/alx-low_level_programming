@@ -1,117 +1,69 @@
 #include "main.h"
 /**
- * print_error_exit - number of argument is not the correct
- * one, exit with code 97 and print
- * @message:error message to be displayed
+ * print_error - function that print an error
+ * @error_message: pointer to a const character
  * Return: Nothing
  */
-void print_error_exit(const char *message)
+void print_error(const char *error_message)
 {
-	dprintf(2, "%s\n", message);
+	dprintf(STDERR_FILENO, "%s\n", error_message);
 	exit(1);
 }
 /**
- * close_file_exit - close the file discriptor
- * @fd:file descriptor to be closed
- * Return: -1
+ * copy_file - function that copy file from the source to the destination
+ * @file_from:source file
+ * @file_to:destination file
+ * Return: Nothing
  */
-void close_file_exit(int fd)
+void copy_file(const char *file_from, const char *file_to)
 {
-	if (close(fd) == -1)
+	int fd_from, fd_to;
+	ssize_t bytes_read, bytes_written;
+	char buffer[BUFFER_SIZE];
+
+	fd_from = open(file_from, O_RDONLY);
+	if (fd_from == -1)
+		print_error("Error: Can't read from file");
+
+	fd_to = open(file_to, O_WRONLY | O_CREAT | O_TRUNC,
+				S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (fd_to == -1)
+		print_error("Error: Can't writr to file");
+
+	while ((bytes_read = read(fd_from, buffer, BUFFER_SIZE)) > 0)
 	{
-		dprintf(2, "Error: Can't close fd %d\n", fd);
-		exit(100);
+		bytes_written = write(fd_to, buffer, bytes_read);
+		if (bytes_written == -1)
+			print_error("Error: Cant't write to file");
 	}
-}
-/**
- * open_file - open file with specific parameter
- * @file_path:path to the file that needs to be opened
- * @flags:flags to be used when opening the file
- * @mode:permissions to be set on the file if it is created
- * Return: -1
- */
-int open_file(const char *file_path, int flags, mode_t mode)
-{
-	int fd = open(file_path, flags, mode);
-	{
-	if (fd == -1)
-		dprintf(2, "Error: Cant't open file %s\n", file_path);
-	exit(98);
-}
-return (fd);
-}
-/**
- * read_file - read data from specified file descriptor into a buffer
- * @fd:file descrptor that data will be read
- * @buffer:pointer to buffer where the read data will be stored
- * @count:number of byte to read from file descriptor
- * Return: -1
- */
-ssize_t read_file(int fd, char *buffer, size_t count)
-{
-	ssize_t bytes_read = read(fd, buffer, count);
 
 	if (bytes_read == -1)
-	{
-		dprintf(2, "Error: Can't read from file descriptor %d\n", fd);
-		exit(98);
-	}
-	return (bytes_read);
-}
-/**
- * write_file - write data from the buffer to the specified file descriptor
- * @fd:file descriptor to which data will be written
- * @buffer:pointer to buffer containing the data to be written
- * @count:number of byte to write to the file descriptor
- * Return: -1
- */
-ssize_t write_file(int fd, const char *buffer, size_t count)
-{
-	ssize_t bytes_written = write(fd, buffer, count);
+		print_error("Error: Can't read from file");
 
-	if (bytes_written == -1)
-	{
-		dprintf(2, "Error: Cant't write to file descriptor %d\n", fd);
-		exit(99);
-	}
-	return (bytes_written);
+	if (close(fd_from) == -1)
+		print_error("Error: Can't close file descriptor");
+	if (close(fd_to) == -1)
+		print_error("Error: Can't close file descriptor");
 }
 /**
  * main - entry point
- * @argc: argument count
- * @argv: argument vector
- * Return: Always 0 (success)
+ * @argc:argument count
+ * @argv:argument vector
+ * Return: Nothing
  */
 int main(int argc, char *argv[])
 {
+	const char *file_from;
+	const char *file_to;
+
 	if (argc != 3)
 	{
-		print_error_exit("Usage: cp file_from file_to");
+		print_error("Usage: cp file_from file_to");
 	}
-	const char *file_from = argv[1];
-	const char *file_to = argv[2];
-	const int BUFFER_SIZE = 1024;
-	char buffer[BUFFER_SIZE];
 
-	int fd_from = open_file(file_from, O_RDONLY, 0);
-	int fd_to = open_file(file_to, O_WRONLY | O_CREATE | O_TRUNC,
-		S_IRUSR | S_IWUSR | S_IRGRP);
+	file_from = argv[1];
+	file_to = argv[2];
 
-	ssize_t bytes_read, bytes_written;
-
-	while ((bytes_read = read_file(fd_from, buffer, BUFFER_SIZE)) > 0)
-	{
-		bytes_written = write_file(fd_to, buffer, bytes_read);
-		if (bytes_written != bytes_read)
-		{
-			close_file_exit(fd_from);
-			close_file_exit(fd_to);
-			dprintf(2, "Error: Can't write to %s\n", file_to);
-			exit(99);
-		}
-	}
-}
-close_file_exit(fd_from);
-close_file_exit(fd_to);
-return (0);
+	copy_file(file_from, file_to);
+	return (0);
 }

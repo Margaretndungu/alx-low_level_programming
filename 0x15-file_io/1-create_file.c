@@ -8,15 +8,15 @@
  */
 int create_file(const char *filename, char *text_content)
 {
-	struct stat st;
 	int fd;
+	int bytes_Written;
 
 	if (filename == NULL)
 	{
 		return (-1);
 	}
-	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd == -1)
 	{
 		return (-1);
@@ -24,25 +24,9 @@ int create_file(const char *filename, char *text_content)
 
 	if (text_content != NULL)
 	{
-		size_t len = strlen(text_content);
-		ssize_t bytes_written = write(fd, text_content, len);
-
-		if (bytes_written != (ssize_t) len)
+		bytes_Written = write(fd, text_content, strlen(text_content));
+		if (bytes_Written == -1)
 		{
-			close(fd);
-			return (-1);
-		}
-	}
-
-	if (fstat(fd, &st) == -1)
-	{
-		close(fd);
-		return (-1);
-	}
-	if ((st.st_mode & S_IRUSR) == 0 || (st.st_mode & S_IWUSR) == 0)
-		{
-		if (fchmod(fd, S_IRUSR | S_IWUSR) == -1)
-			{
 			close(fd);
 			return (-1);
 		}
